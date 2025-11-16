@@ -30,13 +30,17 @@ type PublishVideoArgs struct {
 
 // SearchFeedsArgs 搜索内容的参数
 type SearchFeedsArgs struct {
-	Keyword string         `json:"keyword" jsonschema:"搜索关键词"`
-	Filters []FilterOption `json:"filters,omitempty" jsonschema:"筛选选项列表"`
+	Keyword string       `json:"keyword" jsonschema:"搜索关键词"`
+	Filters FilterOption `json:"filters,omitempty" jsonschema:"筛选选项"`
 }
 
+// FilterOption 筛选选项结构体
 type FilterOption struct {
-	FiltersIndex string `json:"filters_index" jsonschema:"筛选索引 排序依据 笔记类型, 发布时间, 搜索范围, 位置距离"` //
-	TagsIndex    string `json:"tags_index" jsonschema:"筛选值 排序依据（综合、最新、最多点赞、最多评论、最多收藏）笔记类型（不限、视频、图文）发布时间（不限、一天内、一周内、半年内）搜索范围（不限、已看过、未看过、已关注）位置距离（不限、同城、附近）"`
+	SortBy      string `json:"sort_by,omitempty" jsonschema:"排序依据: 综合|最新|最多点赞|最多评论|最多收藏,默认为'综合'"`
+	NoteType    string `json:"note_type,omitempty" jsonschema:"笔记类型: 不限|视频|图文,默认为'不限'"`
+	PublishTime string `json:"publish_time,omitempty" jsonschema:"发布时间: 不限|一天内|一周内|半年内,默认为'不限'"`
+	SearchScope string `json:"search_scope,omitempty" jsonschema:"搜索范围: 不限|已看过|未看过|已关注,默认为'不限'"`
+	Location    string `json:"location,omitempty" jsonschema:"位置距离: 不限|同城|附近,默认为'不限'"`
 }
 
 // FeedDetailArgs 获取Feed详情的参数
@@ -149,7 +153,19 @@ func registerTools(server *mcp.Server, appServer *AppServer) {
 		}),
 	)
 
-	// 工具 3: 发布内容
+	// 工具 3: 删除 cookies（登录重置）
+	mcp.AddTool(server,
+		&mcp.Tool{
+			Name:        "delete_cookies",
+			Description: "删除 cookies 文件，重置登录状态。删除后需要重新登录。",
+		},
+		withPanicRecovery("delete_cookies", func(ctx context.Context, req *mcp.CallToolRequest, _ any) (*mcp.CallToolResult, any, error) {
+			result := appServer.handleDeleteCookies(ctx)
+			return convertToMCPResult(result), nil, nil
+		}),
+	)
+
+	// 工具 4: 发布内容
 	mcp.AddTool(server,
 		&mcp.Tool{
 			Name:        "publish_content",
@@ -168,7 +184,7 @@ func registerTools(server *mcp.Server, appServer *AppServer) {
 		}),
 	)
 
-	// 工具 4: 获取Feed列表
+	// 工具 5: 获取Feed列表
 	mcp.AddTool(server,
 		&mcp.Tool{
 			Name:        "list_feeds",
@@ -180,7 +196,7 @@ func registerTools(server *mcp.Server, appServer *AppServer) {
 		}),
 	)
 
-	// 工具 5: 搜索内容
+	// 工具 6: 搜索内容
 	mcp.AddTool(server,
 		&mcp.Tool{
 			Name:        "search_feeds",
@@ -192,7 +208,7 @@ func registerTools(server *mcp.Server, appServer *AppServer) {
 		}),
 	)
 
-	// 工具 6: 获取Feed详情
+	// 工具 7: 获取Feed详情
 	mcp.AddTool(server,
 		&mcp.Tool{
 			Name:        "get_feed_detail",
@@ -208,7 +224,7 @@ func registerTools(server *mcp.Server, appServer *AppServer) {
 		}),
 	)
 
-	// 工具 7: 获取用户主页
+	// 工具 8: 获取用户主页
 	mcp.AddTool(server,
 		&mcp.Tool{
 			Name:        "user_profile",
@@ -224,7 +240,7 @@ func registerTools(server *mcp.Server, appServer *AppServer) {
 		}),
 	)
 
-	// 工具 8: 发表评论
+	// 工具 9: 发表评论
 	mcp.AddTool(server,
 		&mcp.Tool{
 			Name:        "post_comment_to_feed",
@@ -241,7 +257,7 @@ func registerTools(server *mcp.Server, appServer *AppServer) {
 		}),
 	)
 
-	// 工具 9: 发布视频（仅本地文件）
+	// 工具 10: 发布视频（仅本地文件）
 	mcp.AddTool(server,
 		&mcp.Tool{
 			Name:        "publish_with_video",
@@ -259,7 +275,7 @@ func registerTools(server *mcp.Server, appServer *AppServer) {
 		}),
 	)
 
-	// 工具 10: 点赞笔记
+	// 工具 11: 点赞笔记
 	mcp.AddTool(server,
 		&mcp.Tool{
 			Name:        "like_feed",
@@ -276,7 +292,7 @@ func registerTools(server *mcp.Server, appServer *AppServer) {
 		}),
 	)
 
-	// 工具 11: 收藏笔记
+	// 工具 12: 收藏笔记
 	mcp.AddTool(server,
 		&mcp.Tool{
 			Name:        "favorite_feed",
@@ -293,7 +309,7 @@ func registerTools(server *mcp.Server, appServer *AppServer) {
 		}),
 	)
 
-	logrus.Infof("Registered %d MCP tools", 11)
+	logrus.Infof("Registered %d MCP tools", 12)
 }
 
 // convertToMCPResult 将自定义的 MCPToolResult 转换为官方 SDK 的格式
