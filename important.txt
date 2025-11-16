@@ -1,0 +1,18 @@
+前端服务启动
+    npx @modelcontextprotocol/inspector
+    这个好像每次只能跟一个MCP服务连接, 使用新的MCP地址需要重启前端服务, 可能跟sessionid有关
+    访问地址:
+        http://localhost:6274
+    配置MCP服务:
+        http://localhost:18060/mcp
+容器启动
+    cd D:\github_pj\xiaohongshu-mcp\docker\
+    docker-compose up -d
+    容器启动后路径挂载:
+        D:\github_pj\xiaohongshu-mcp\docker\data	/app/data
+        D:\github_pj\xiaohongshu-mcp\docker\images	/app/images
+小红书登录
+    go run cmd/login/main.go
+    登录后获取到cookies.json
+    将cookies.json放到容器内即可使用D:\github_pj\xiaohongshu-mcp\docker\data\cookies.json
+

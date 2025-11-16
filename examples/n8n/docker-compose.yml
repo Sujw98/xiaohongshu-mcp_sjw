@@ -1,0 +1,35 @@
+## sjw: 暂时用不到
+version: '3'
+
+services:
+  n8n:
+    image: n8nio/n8n
+    container_name: n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    volumes:
+      # 运行数据挂载 - 确保工作流数据持久化
+      - ./n8n_data:/home/node/.n8n
+      # 汉化包挂载 - 替换为你的汉化包路径
+      - ./editor-ui/dist:/usr/local/lib/node_modules/n8n/node_modules/n8n-editor-ui/dist
+    environment:
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      # 可选：设置基本认证（增强安全性）
+      # - N8N_BASIC_AUTH_ACTIVE=true
+      # - N8N_BASIC_AUTH_USER=myuser
+      # - N8N_BASIC_AUTH_PASSWORD=mypassword
+      # 时区设置（亚洲/上海）
+      - GENERIC_TIMEZONE=Asia/Shanghai
+      # 调试时禁用安全Cookie（方便本地访问）
+      - N8N_SECURE_COOKIE=false
+      # 设置默认语言为简体中文
+      - N8N_DEFAULT_LOCALE=zh-CN
+    networks:
+      - n8n-network
+
+networks:
+  n8n-network:
+    driver: bridge

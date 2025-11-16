@@ -18,7 +18,7 @@ func corsMiddleware() gin.HandlerFunc {
 			c.AbortWithStatus(http.StatusNoContent)
 			return
 		}
-
+		// TODO 这里可以根据 Authorization 做认证
 		c.Next()
 	}
 }
